@@ -36,6 +36,7 @@ regression where we want the prediction to be continuous values.
 */
 
 #include <stdio.h>
+#include "functions.h"
 
 int logMsg(const char * msg) {
     printf("%s", msg);
