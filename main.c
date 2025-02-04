@@ -36,6 +36,7 @@ regression where we want the prediction to be continuous values.
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "functions.h"
 
 int main() {
@@ -56,11 +57,16 @@ int main() {
         (int *)layer2
     };
 
-    printf("%d\n", layer1[0][0]);
-    printf("%d\n", layer2[0][0]);
-    printf("%d\n", ((int (*)[5])hiddenLayers[0])[0][0]);
+    //printf("%d\n", ((int (*)[5])hiddenLayers[0])[0][0]);
 
-    int result = dot(layer1[0], layer1[1], 5);
-    printf("The result: %d\n", result);
+    int neurons = sizeof(layer1) / sizeof(layer1[0]);
+    int *output = (int*)malloc(neurons * sizeof(int));
+
+    for (int i = 0; i < neurons; i++) {
+        output[i] = dot(inputLayer, layer1[i]);
+        printf("%d\n", output[i]);
+    }
+    free(output);
+
     return 0;
 }
