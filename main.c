@@ -3,10 +3,10 @@
 /* # Notes
 
 ## Terminology
-* Input Layer: An array of numbers, or 'input features'.
-* Hidden Layer: An array of arrays, known as 'neurons'.
+* Input Neuron: An array of numbers, or 'input features'.
+* Hidden Neuron: An array of arrays, known as 'neurons'.
 * Neuron: An array of numbers, known as 'weights', with a weight for each input feature.
-* Output Layer: An array of neurons, with a neuron for every output possibility.
+* Output Neuron: An array of neurons, with a neuron for every output possibility.
 * Prediction: The output of the output layer, or the output of the AI.
 
 ## Process Summary
@@ -37,7 +37,7 @@ regression where we want the prediction to be continuous values.
 
 #include <stdio.h>
 
-int log(const char * msg) {
+int logMsg(const char * msg) {
     printf("%s", msg);
     return 0;
 }
@@ -53,10 +53,28 @@ int dot(const int *arr1, const int *arr2, int size) {
 }
 
 int main() {
-    int inputLayer[5] = {1, 2, 3, 4, 5};
+    int inputLayer[] = {1, 2, 3, 4, 5};
 
-    int result = dot(data);
+    int layer1[2][5] = {
+        {1, 2, 3, 4, 5},
+        {1, 2, 3, 4, 5}
+    };
 
+    int layer2[2][2] = {
+        {1, 2},
+        {1, 2}
+    };
+
+    int *hiddenLayers[2] = {
+        (int *)layer1,
+        (int *)layer2
+    };
+
+    printf("%d\n", layer1[0][0]);
+    printf("%d\n", layer2[0][0]);
+    printf("%d\n", ((int (*)[5])hiddenLayers[0])[0][0]);
+
+    int result = dot(layer1[0], layer1[1], 5);
     printf("The result: %d\n", result);
     return 0;
 }
