@@ -43,16 +43,6 @@ int logMsg(const char * msg) {
     return 0;
 }
 
-int dot(const int *arr1, const int *arr2, int size) {
-    int result = 0;
-
-    for (int i = 0; i < size; i++) {
-        result += arr1[i] * arr2[i];
-    }
-
-    return result;
-}
-
 int main() {
     int inputLayer[] = {1, 2, 3, 4, 5};
 
