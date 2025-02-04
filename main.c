@@ -38,11 +38,6 @@ regression where we want the prediction to be continuous values.
 #include <stdio.h>
 #include "functions.h"
 
-int logMsg(const char * msg) {
-    printf("%s", msg);
-    return 0;
-}
-
 int main() {
     int inputLayer[] = {1, 2, 3, 4, 5};
 
