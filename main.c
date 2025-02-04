@@ -36,21 +36,7 @@ regression where we want the prediction to be continuous values.
 */
 
 #include <stdio.h>
-
-int logMsg(const char * msg) {
-    printf("%s", msg);
-    return 0;
-}
-
-int dot(const int *arr1, const int *arr2, int size) {
-    int result = 0;
-
-    for (int i = 0; i < size; i++) {
-        result += arr1[i] * arr2[i];
-    }
-
-    return result;
-}
+#include "functions.h"
 
 int main() {
     int inputLayer[] = {1, 2, 3, 4, 5};
