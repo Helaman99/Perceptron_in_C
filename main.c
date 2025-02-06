@@ -64,7 +64,6 @@ int main() {
 
     for (int i = 0; i < neurons; i++) {
         output[i] = dot(inputLayer, layer1[i]);
-        printf("%d\n", output[i]);
     }
     free(output);
 
