@@ -12,4 +12,16 @@ int dot(const int *arr1, const int *arr2) {
     return result;
 }
 
+int* multiplyLayers(const int* inputVector, const int* hiddenLayer) {
+    int neurons = sizeof(hiddenLayer) / sizeof(hiddenLayer[0]);
+    int *output = (int*)malloc(neurons * sizeof(int));
+
+    for (int i = 0; i < neurons; i++) {
+        output[i] = dot(inputVector, hiddenLayer[i]);
+    }
+
+    free(inputVector);
+    return output;
+}
+
 #endif
