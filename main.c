@@ -3,10 +3,10 @@
 /* # Notes
 
 ## Terminology
-* Input Neuron: An array of numbers, or 'input features'.
-* Hidden Neuron: An array of arrays, known as 'neurons'.
+* Input Layer / Vector: An array of numbers, or 'input features'.
+* Hidden Layer: An array of arrays, known as 'neurons'.
 * Neuron: An array of numbers, known as 'weights', with a weight for each input feature.
-* Output Neuron: An array of neurons, with a neuron for every output possibility.
+* Output Layer: An array of neurons, with a neuron for every output possibility.
 * Prediction: The output of the output layer, or the output of the AI.
 
 ## Process Summary
@@ -36,10 +36,13 @@ regression where we want the prediction to be continuous values.
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "functions.h"
 
+#define INPUT_FEATURES 5
+
 int main() {
-    int inputLayer[] = {1, 2, 3, 4, 5};
+    int inputVector[INPUT_FEATURES] = {1, 2, 3, 4, 5};
 
     int layer1[2][5] = {
         {1, 2, 3, 4, 5},
@@ -56,11 +59,18 @@ int main() {
         (int *)layer2
     };
 
-    printf("%d\n", layer1[0][0]);
-    printf("%d\n", layer2[0][0]);
-    printf("%d\n", ((int (*)[5])hiddenLayers[0])[0][0]);
+    //printf("%d\n", ((int (*)[5])hiddenLayers[0])[0][0]);
+    int layerCount = sizeof(hiddenLayers) / sizeof(hiddenLayers[0]);
+    int *output = inputVector;
+    for (int i = 0; i < layerCount; i++) {
+        output = multiplyLayers(output, hiddenLayers[i]);
+    }
 
-    int result = dot(layer1[0], layer1[1], 5);
-    printf("The result: %d\n", result);
+    int outputLength = sizeof(output) / sizeof(output[0]);
+    for (int i = 0; i < outputLength; i++) {
+        printf("%d\n", output[i]);
+    }
+    free(output);
+
     return 0;
 }
