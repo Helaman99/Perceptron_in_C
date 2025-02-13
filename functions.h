@@ -1,26 +1,19 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
-int dot(const int *arr1, const int *arr2) {
+int dot(const int *arr1, const int *arr2, int size) {
     int result = 0;
-    int size = sizeof(arr1) / sizeof(arr1[0]);
-
     for (int i = 0; i < size; i++) {
         result += arr1[i] * arr2[i];
     }
-
     return result;
 }
 
-int* multiplyLayers(const int* inputVector, const int* hiddenLayer) {
-    int neurons = sizeof(hiddenLayer) / sizeof(hiddenLayer[0]);
-    int *output = (int*)malloc(neurons * sizeof(int));
-
-    for (int i = 0; i < neurons; i++) {
-        output[i] = dot(inputVector, hiddenLayer[i]);
+int* multiplyLayers(const int* inputVector, int inputSize, const Layer hiddenLayer) {
+    int *output = (int*)malloc(hiddenLayer.neuronCount * sizeof(int));
+    for (int i = 0; i < hiddenLayer.neuronCount; i++) {
+        output[i] = dot(inputVector, hiddenLayer.neurons[i], inputSize);
     }
-
-    free(inputVector);
     return output;
 }
 
