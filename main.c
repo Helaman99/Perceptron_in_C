@@ -43,48 +43,46 @@ regression where we want the prediction to be continuous values.
 #define INPUT_FEATURES 5
 
 int main() {
-    int inputVector[INPUT_FEATURES] = {1, 2, 3, 4, 5};
+    int input[INPUT_FEATURES] = {1, 2, 3, 4, 5};
 
     int layerID = 1;
     int neuronCount = 2;
     int weightCount = 5;
 
     Layer layer1 = populateLayer(layerID, neuronCount, weightCount);
-    printLayer(layer1);
-    freeLayer(layer1);
 
-    // Layer layer2 = {{
-    //     {1, 2},
-    //     {1, 2}
-    // }, 2, 2};
+    layerID = 2;
+    neuronCount = 2;
+    weightCount = 2;
 
-    // Layer hiddenLayers[2] = {
-    //     layer1,
-    //     layer2
-    // };
+    Layer layer2 = populateLayer(layerID, neuronCount, weightCount);
 
-    // printf("Number of hidden layers: %d\n", (sizeof(hiddenLayers) / sizeof(hiddenLayers[0])));
-    // printf("Number of neurons in layer 1: %d\n", hiddenLayers[0].neuronCount);
-    // printf("Number of weights per neuron in layer 1: %d\n", hiddenLayers[0].weightCount);
-    // printf("Number of neurons in layer 2: %d\n", hiddenLayers[1].neuronCount);
-    // printf("Number of weights per neuron in layer 2: %d\n", hiddenLayers[1].weightCount);
-    // printf("First weight in layer 1 neuron 1: %d\n", hiddenLayers[0].neurons[0][0]);
+    Layer hiddenLayers[2] = {
+        layer1,
+        layer2
+    };
 
-    //printf("%d\n", ((int (*)[5])hiddenLayers[0])[0][0]);
-    // int layerCount = sizeof(hiddenLayers) / sizeof(hiddenLayers[0]);
-    // // Pass sizes to the functions
-    // int *output = inputVector;
-    // for (int i = 0; i < layerCount; i++) {
-    //     output = multiplyLayers(output, hiddenLayers[i]);
+    int layerCount = sizeof(hiddenLayers) / sizeof(hiddenLayers[0]);
+    int *inputVector = input;
+    int inputSize = INPUT_FEATURES;
+    int *output = NULL;
 
-    //     // Free output after first iteration
-    // }
+    for (int i = 0; i < layerCount; i++) {
+        output = multiplyLayers(inputVector, inputSize, hiddenLayers[i]);
+        if (i > 0) {
+            free(inputVector);
+        }
+        inputVector = output;
+        inputSize = hiddenLayers[i].neuronCount;
+        freeLayer(hiddenLayers[i]);
+    }
 
-    // int outputLength = sizeof(output) / sizeof(output[0]);
-    // for (int i = 0; i < outputLength; i++) {
-    //     printf("%d\n", output[i]);
-    // }
-    // free(output);
+    printf("Output: { ");
+    for (int i = 0; i < inputSize; i++) {
+        printf("%d ", output[i]);
+    }
+    printf("}\n");
+    free(output);
 
     return 0;
 }
