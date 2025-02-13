@@ -37,6 +37,7 @@ regression where we want the prediction to be continuous values.
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "Layer.h"
 #include "functions.h"
 
 #define INPUT_FEATURES 5
@@ -44,33 +45,46 @@ regression where we want the prediction to be continuous values.
 int main() {
     int inputVector[INPUT_FEATURES] = {1, 2, 3, 4, 5};
 
-    int layer1[2][5] = {
-        {1, 2, 3, 4, 5},
-        {1, 2, 3, 4, 5}
-    };
+    int layerID = 1;
+    int neuronCount = 2;
+    int weightCount = 5;
 
-    int layer2[2][2] = {
-        {1, 2},
-        {1, 2}
-    };
+    Layer layer1 = populateLayer(layerID, neuronCount, weightCount);
+    printLayer(layer1);
+    freeLayer(layer1);
 
-    int *hiddenLayers[2] = {
-        (int *)layer1,
-        (int *)layer2
-    };
+    // Layer layer2 = {{
+    //     {1, 2},
+    //     {1, 2}
+    // }, 2, 2};
+
+    // Layer hiddenLayers[2] = {
+    //     layer1,
+    //     layer2
+    // };
+
+    // printf("Number of hidden layers: %d\n", (sizeof(hiddenLayers) / sizeof(hiddenLayers[0])));
+    // printf("Number of neurons in layer 1: %d\n", hiddenLayers[0].neuronCount);
+    // printf("Number of weights per neuron in layer 1: %d\n", hiddenLayers[0].weightCount);
+    // printf("Number of neurons in layer 2: %d\n", hiddenLayers[1].neuronCount);
+    // printf("Number of weights per neuron in layer 2: %d\n", hiddenLayers[1].weightCount);
+    // printf("First weight in layer 1 neuron 1: %d\n", hiddenLayers[0].neurons[0][0]);
 
     //printf("%d\n", ((int (*)[5])hiddenLayers[0])[0][0]);
-    int layerCount = sizeof(hiddenLayers) / sizeof(hiddenLayers[0]);
-    int *output = inputVector;
-    for (int i = 0; i < layerCount; i++) {
-        output = multiplyLayers(output, hiddenLayers[i]);
-    }
+    // int layerCount = sizeof(hiddenLayers) / sizeof(hiddenLayers[0]);
+    // // Pass sizes to the functions
+    // int *output = inputVector;
+    // for (int i = 0; i < layerCount; i++) {
+    //     output = multiplyLayers(output, hiddenLayers[i]);
 
-    int outputLength = sizeof(output) / sizeof(output[0]);
-    for (int i = 0; i < outputLength; i++) {
-        printf("%d\n", output[i]);
-    }
-    free(output);
+    //     // Free output after first iteration
+    // }
+
+    // int outputLength = sizeof(output) / sizeof(output[0]);
+    // for (int i = 0; i < outputLength; i++) {
+    //     printf("%d\n", output[i]);
+    // }
+    // free(output);
 
     return 0;
 }
