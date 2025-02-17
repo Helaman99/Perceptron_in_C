@@ -37,39 +37,51 @@ regression where we want the prediction to be continuous values.
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "Layer.h"
 #include "functions.h"
 
 #define INPUT_FEATURES 5
 
 int main() {
-    int inputVector[INPUT_FEATURES] = {1, 2, 3, 4, 5};
+    int input[INPUT_FEATURES] = {1, 2, 3, 4, 5};
 
-    int layer1[2][5] = {
-        {1, 2, 3, 4, 5},
-        {1, 2, 3, 4, 5}
+    int layerID = 1;
+    int neuronCount = 2;
+    int weightCount = 5;
+
+    Layer layer1 = populateLayer(layerID, neuronCount, weightCount);
+
+    layerID = 2;
+    neuronCount = 2;
+    weightCount = 2;
+
+    Layer layer2 = populateLayer(layerID, neuronCount, weightCount);
+
+    Layer hiddenLayers[2] = {
+        layer1,
+        layer2
     };
 
-    int layer2[2][2] = {
-        {1, 2},
-        {1, 2}
-    };
-
-    int *hiddenLayers[2] = {
-        (int *)layer1,
-        (int *)layer2
-    };
-
-    //printf("%d\n", ((int (*)[5])hiddenLayers[0])[0][0]);
     int layerCount = sizeof(hiddenLayers) / sizeof(hiddenLayers[0]);
-    int *output = inputVector;
+    int *inputVector = input;
+    int inputSize = INPUT_FEATURES;
+    int *output = NULL;
+
     for (int i = 0; i < layerCount; i++) {
-        output = multiplyLayers(output, hiddenLayers[i]);
+        output = multiplyLayers(inputVector, inputSize, hiddenLayers[i]);
+        if (i > 0) {
+            free(inputVector);
+        }
+        inputVector = output;
+        inputSize = hiddenLayers[i].neuronCount;
+        freeLayer(hiddenLayers[i]);
     }
 
-    int outputLength = sizeof(output) / sizeof(output[0]);
-    for (int i = 0; i < outputLength; i++) {
-        printf("%d\n", output[i]);
+    printf("Output: { ");
+    for (int i = 0; i < inputSize; i++) {
+        printf("%d ", output[i]);
     }
+    printf("}\n");
     free(output);
 
     return 0;
