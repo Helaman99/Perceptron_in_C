@@ -3,7 +3,7 @@
 #include "Layer.h"
 
 Layer populateLayer(int id, int neuronCount, int weightCount) {
-    int **neurons = malloc(neuronCount * sizeof(int *));
+    int** neurons = malloc(neuronCount * sizeof(int*));
     for (int i = 0; i < neuronCount; i++) {
         neurons[i] = malloc(weightCount * sizeof(int));
     }
@@ -23,7 +23,7 @@ void printLayer(Layer layer) {
     printf("Contents of layer ID %d:\n", layer.id);
     printf("Neurons: %d | Weights per neuron: %d\n", layer.neuronCount, layer.weightCount);
     for (int neuron = 0; neuron < layer.neuronCount; neuron++) {
-        printf("Neuron %d: {", neuron);
+        printf("Neuron %d: {", neuron + 1);
         for (int weight = 0; weight < layer.weightCount; weight++) {
             printf(" %d", layer.neurons[neuron][weight]);
         }
