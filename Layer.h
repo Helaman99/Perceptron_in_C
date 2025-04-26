@@ -3,7 +3,7 @@
 
 typedef struct {
     int id;
-    int ** neurons;
+    int** neurons;
     int neuronCount;
     int weightCount;
 } Layer;
