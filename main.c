@@ -41,83 +41,31 @@ regression where we want the prediction to be continuous values.
 #include "Layer.h"
 #include "functions.h"
 
-#define INPUT_FEATURES 5
-#define LINE_LENGTH 1024
+#define LINE_MAX_LENGTH 4096
 
-int main() {
-    int input[INPUT_FEATURES] = {1, 2, 3, 4, 5};
+int main(int argc, char* argv[]) {
 
-    int layerCount = getLineCount("C:\\Git\\Perceptron_in_C\\network.csv", LINE_LENGTH);
+    if (argc > 1) {
+        if (strcmp(argv[1], "--test") == 0) {
+            double input[5] = {1.0, 2.0, 3.0, 4.0, 5.0};
+            char* filePath = "new-network.csv";
 
-    FILE* networkData = fopen("C:\\Git\\Perceptron_in_C\\network.csv", "r");
-    if (!networkData) {
-        perror("Error opening network file!");
-        return EXIT_FAILURE;
-    }
+            int layerCount = getLineCount(filePath, LINE_MAX_LENGTH);
+            Layer* testLayers = importNetwork(filePath, layerCount, LINE_MAX_LENGTH);
 
-    char* currNum = NULL;
-    int id = 0;
-    int neuronCount = 0;
-    int weightCount = 0;
-    int** neurons = NULL;
-    Layer* hiddenLayers = (Layer*)malloc(layerCount * sizeof(Layer));
-    char line[LINE_LENGTH];
-    printf("Processing input file...\n");
-    while (fgets(line, sizeof(line), networkData)) {
-        printf("Importing line %s\n", line);
-
-        hiddenLayers[id].id = id + 1;
-        printf("Creating layer with ID %d\n", hiddenLayers[id].id);
-
-        neuronCount = atoi(strtok(line, ","));
-        hiddenLayers[id].neuronCount = neuronCount;
-        printf("Number of neurons: %d\n", neuronCount);
-
-        weightCount = atoi(strtok(NULL, ","));
-        hiddenLayers[id].weightCount = weightCount;
-        printf("Number of weights per neuron: %d\n", weightCount);
-
-        neurons = malloc(neuronCount * sizeof(int*));
-        for (int i = 0; i < neuronCount; i++) {
-            neurons[i] = malloc(weightCount * sizeof(int));
-            for (int j = 0; j < weightCount; j++) {
-                neurons[i][j] = atof(strtok(NULL, ","));
-                printf("Adding weight: %d\n", neurons[i][j]);
-            }
+            int inputSize = sizeof(input) / sizeof(input[0]);
+            predict(input, inputSize, layerCount, testLayers);
         }
-        hiddenLayers[id].neurons = neurons;
-        
-        id++;
-    }
-
-    fclose(networkData);
-
-    printf("Finished processing input file.\nNetwork contents:\n\n");
-    for (int i = 0; i < layerCount; i++) {
-        printLayer(hiddenLayers[i]);
-    }
-    printf("\n");
-
-    int* inputLayer = input;
-    int inputSize = INPUT_FEATURES;
-    int* output = NULL;
-
-    for (int i = 0; i < layerCount; i++) {
-        output = multiplyLayers(inputLayer, inputSize, hiddenLayers[i]);
-        if (i > 0) {
-            free(inputLayer);
+        else if (strcmp(argv[1], "--init-network") == 0) {
+            initNetwork(LINE_MAX_LENGTH, argv[2]);
         }
-        inputLayer = output;
-        inputSize = hiddenLayers[i].neuronCount;
-        freeLayer(hiddenLayers[i]);
+        else {
+            printHelp();
+        }
     }
-
-    printf("Output: { ");
-    for (int i = 0; i < inputSize; i++) {
-        printf("%d ", output[i]);
+    else {
+        printHelp();
     }
-    printf("}\n");
-    free(output);
 
     return EXIT_SUCCESS;
 }
