@@ -48,16 +48,25 @@ int main(int argc, char* argv[]) {
     if (argc > 1) {
         if (strcmp(argv[1], "--test") == 0) {
             double input[5] = {1.0, 2.0, 3.0, 4.0, 5.0};
-            char* filePath = "new-network.csv";
+            char* filePath = "network-test.csv";
 
             int layerCount = getLineCount(filePath, LINE_MAX_LENGTH);
             Layer* testLayers = importNetwork(filePath, layerCount, LINE_MAX_LENGTH);
 
             int inputSize = sizeof(input) / sizeof(input[0]);
-            predict(input, inputSize, layerCount, testLayers);
+            predict(input, inputSize, testLayers, layerCount);
         }
         else if (strcmp(argv[1], "--init-network") == 0) {
-            initNetwork(LINE_MAX_LENGTH, argv[2]);
+            initNetwork(argv[2], LINE_MAX_LENGTH);
+        }
+        else if (strcmp(argv[1], "--predict") == 0) {
+            int layerCount = getLineCount(argv[2], LINE_MAX_LENGTH);
+            Layer* network = importNetwork(argv[2], layerCount, LINE_MAX_LENGTH);
+
+            int inputSize;
+            double* input = getInputFromFile(argv[3], &inputSize, LINE_MAX_LENGTH);
+            predict(input, inputSize, network, layerCount);
+            free(input);
         }
         else {
             printHelp();

@@ -26,7 +26,7 @@ int getLineCount(const char* fileName, int maxLineLength) {
 }
 
 // Creates new CSV file that houses a neural network with randomized weights
-void initNetwork(int maxLineLength, char* filePath) {
+void initNetwork(char* filePath, int maxLineLength) {
     FILE* input = fopen(filePath, "r");
     if (!input) {
         perror("Error opening file!");
@@ -71,20 +71,20 @@ void initNetwork(int maxLineLength, char* filePath) {
 
 // Initializes the neural network based on the contents of a CSV file
 Layer* importNetwork(char* filePath, int layerCount, int maxLineLength) {
-    FILE* networkData = fopen(filePath, "r");
-    if (!networkData) {
+    FILE* networkFile = fopen(filePath, "r");
+    if (!networkFile) {
         perror("Error opening network file!/n");
         exit(EXIT_FAILURE);
     }
+
+    printf("Building neural network...\n");
 
     int id = 0, neuronCount = 0, weightCount = 0;
     double** neurons = NULL;
     Layer* hiddenLayers = (Layer*)malloc(layerCount * sizeof(Layer));
     char* line = calloc(maxLineLength, sizeof(char));
 
-    printf("Processing input file...\n");
-
-    while (fgets(line, maxLineLength, networkData)) {
+    while (fgets(line, maxLineLength, networkFile)) {
         //printf("Importing line: %s\n", line);
 
         hiddenLayers[id].id = id + 1;
@@ -93,7 +93,7 @@ Layer* importNetwork(char* filePath, int layerCount, int maxLineLength) {
         weightCount = atoi(strtok(NULL, ","));
         hiddenLayers[id].weightCount = weightCount;
 
-        printf("Initializing layer with ID %d, %d neurons, and %d weights per nueron...\n", hiddenLayers[id].id, neuronCount,weightCount);
+        printf("Initializing layer ID %d with %d neurons and %d weights per neuron...\n", hiddenLayers[id].id, neuronCount,weightCount);
 
         neurons = malloc(neuronCount * sizeof(double*));
         for (int i = 0; i < neuronCount; i++) {
@@ -113,10 +113,10 @@ Layer* importNetwork(char* filePath, int layerCount, int maxLineLength) {
         id++;
     }
 
-    fclose(networkData);
+    fclose(networkFile);
     free(line);
 
-    printf("Finished processing input file.\n");
+    printf("Finished processing network file!\n");
     return hiddenLayers;
 }
 
@@ -138,7 +138,38 @@ double* multiplyLayers(const double* inputLayer, int inputSize, const Layer hidd
     return output;
 }
 
-void predict(double* input, int inputSize, int layerCount, Layer* hiddenLayers) {
+double* getInputFromFile(char* filePath, int* inputSize, int maxLineLength) {
+    FILE* inputFile = fopen(filePath, "r");
+    if (!inputFile) {
+        perror("Error opening input file!/n");
+        exit(EXIT_FAILURE);
+    }
+
+    char* line = calloc(maxLineLength, sizeof(char));
+    fgets(line, maxLineLength, inputFile);
+    fclose(inputFile);
+
+    double* input = malloc(sizeof(double) * maxLineLength);
+    if (!input) {
+        perror("Memory allocation for input vector failed.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char* token = strtok(line, ",");
+    int count = 0;
+
+    while (token) {
+        input[count++] = atof(token);
+        token = strtok(NULL, ",");
+    }
+    *inputSize = count;
+    free(line);
+
+    printf("Finished processing input file.\n");
+    return input;
+}
+
+void predict(double* input, int inputSize, Layer* hiddenLayers, int layerCount) {
     double* inputLayer = input;
     double* output;
 
