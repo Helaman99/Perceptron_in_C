@@ -11,6 +11,11 @@ void printLayer(Layer layer) {
             printf(" %.6f", layer.neurons[neuron][weight]);
         }
         printf(" }\n");
+        printf("Bias vector: { ");
+        for (int bias = 0; bias < layer.neuronCount; bias++) {
+            printf(" %.6f", layer.biases[bias]);
+        }
+        printf(" }\n");
     }
 }
 
@@ -20,5 +25,6 @@ void freeLayer(Layer layer) {
         free(layer.neurons[i]);
     }
     free(layer.neurons);
+    free(layer.biases);
     printf(" contents freed!\n");
 }

@@ -11,7 +11,7 @@
 
 ## Process Summary
 Multiply (dot product) the input layer by every neuron in the next hidden layer.
-Activate every single product. Assemble those products into a new input layer.
+Add bias, and activate the result. Assemble those products into a new input layer.
 
 ## Things to remember
 The number of weights in every neuron must match the number of input features in the
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
             Layer* testLayers = importNetwork(filePath, layerCount, LINE_MAX_LENGTH);
 
             int inputSize = sizeof(input) / sizeof(input[0]);
-            predict(input, inputSize, testLayers, layerCount);
+            predict(input, inputSize, testLayers, layerCount, "none", "none");
         }
         else if (strcmp(argv[1], "--init-network") == 0) {
             initNetwork(argv[2], LINE_MAX_LENGTH);
@@ -65,7 +65,15 @@ int main(int argc, char* argv[]) {
 
             int inputSize;
             double* input = getInputFromFile(argv[3], &inputSize, LINE_MAX_LENGTH);
-            predict(input, inputSize, network, layerCount);
+            
+            if (argc > 4 && argv[4] != NULL)
+                if (argc > 5 && argv[5] != NULL)
+                    predict(input, inputSize, network, layerCount, argv[4], argv[5]);
+                else
+                    predict(input, inputSize, network, layerCount, argv[4], "none");
+            else
+                predict(input, inputSize, network, layerCount, "none", "none");
+            
             free(input);
         }
         else {

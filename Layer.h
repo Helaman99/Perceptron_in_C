@@ -3,9 +3,10 @@
 
 typedef struct {
     int id;
-    double** neurons;
     int neuronCount;
     int weightCount;
+    double** neurons;
+    double* biases;
 } Layer;
 
 Layer populateLayer(int id, int neuronCount, int weightCount);

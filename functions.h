@@ -51,13 +51,16 @@ void initNetwork(char* filePath, int maxLineLength) {
         printf("Number of neurons: %d\n", neuronCount);
         printf("Number of weights per neuron: %d\n", weightCount);
 
-        char* weights = malloc(totalWeights * 10);
+        char* weights = malloc(totalWeights * 10 + neuronCount);
         weights[0] = '\0';
 
-        for (int i = 0; i < totalWeights; i++) {
+        for (int i = 0; i < totalWeights; i++) { // Randomized weights
             char temp[10];
             snprintf(temp, sizeof(temp), ",%.2f", ((double)rand() / RAND_MAX));
             strcat(weights, temp);
+        }
+        for (int i = 0; i < neuronCount; i++) { // Adding biases
+            strcat(weights, ",0.01");
         }
 
         fprintf(outputFile, "%d,%d%s\n", neuronCount, weightCount, weights);
@@ -110,6 +113,18 @@ Layer* importNetwork(char* filePath, int layerCount, int maxLineLength) {
             }
         }
         hiddenLayers[id].neurons = neurons;
+
+        double* biases = malloc(neuronCount * sizeof(double));
+        for (int i = 0; i < neuronCount; i++) {
+            char* token = strtok(NULL, ",");
+            if (token) {
+                biases[i] = atof(token);
+            } else {
+                printf("Warning: Missing bias value!\n");
+            }
+        }
+        hiddenLayers[id].biases = biases;
+
         id++;
     }
 
@@ -129,11 +144,66 @@ double dot(const double* arr1, const double* arr2, int size) {
     return result;
 }
 
+double activate(double output, char* func) {
+    if (strcmp(func, "relu") == 0) return output > 0 ? output : 0;
+    else if (strcmp(func, "leaky relu") == 0) { const float alpha = 0.01f; return output > 0 ? output : alpha * output; }
+    else if (strcmp(func, "sigmoid") == 0) return 1.0 / (1.0 + exp(-output));
+    else if (strcmp(func, "tanh") == 0) return tanh(output);
+    else if (strcmp(func, "elu") == 0) { const float alpha = 1.0f; return output >= 0 ? output : alpha * (expf(output) - 1); }
+    else return output;
+}
+
+void softmax(double* input, int size) {
+    printf("Applying softmax to final output...\n");
+    double max = input[0];
+    for (int i = 1; i < size; i++) {
+        if (input[i] > max) max = input[i];
+    }
+
+    double sum = 0.0;
+    for (int i = 0; i < size; i++) {
+        input[i] = exp(input[i] - max);  // stability trick
+        sum += input[i];
+    }
+
+    for (int i = 0; i < size; i++) {
+        input[i] /= sum;
+    }
+}
+
+void logsoftmax(double* input, int size) {
+    printf("Applying logsoftmax to final output...\n");
+    softmax(input, size);
+    for (int i = 0; i < size; i++) {
+        input[i] = log(input[i]);
+    }
+}
+
+// Simulated SparseMax (basic thresholding behavior)
+void sparsemax(double* input, int size) {
+    printf("Applying sparsepax to final output...\n");
+    for (int i = 0; i < size; i++) {
+        input[i] = input[i] > 0 ? input[i] : 0;
+    }
+}
+
+void finalActivate(double* input, int size, const char* func) {
+    if (strcmp(func, "softmax") == 0) 
+        softmax(input, size);
+    else if (strcmp(func, "logsoftmax") == 0) 
+        logsoftmax(input, size);
+    else if (strcmp(func, "sparse") == 0 || strcmp(func, "sparsemax") == 0) 
+        sparsemax(input, size);
+    else printf("Did not apply a final activation function.\n");
+}
+
 // Takes two layers and multiples them together
-double* multiplyLayers(const double* inputLayer, int inputSize, const Layer hiddenLayer) {
+double* multiplyLayers(const double* inputLayer, int inputSize, const Layer hiddenLayer, char* func) {
     double* output = malloc(hiddenLayer.neuronCount * sizeof(double));
     for (int i = 0; i < hiddenLayer.neuronCount; i++) {
         output[i] = dot(inputLayer, hiddenLayer.neurons[i], inputSize);
+        output[i] += hiddenLayer.biases[i];
+        output[i] = activate(output[i], func);
     }
     return output;
 }
@@ -169,9 +239,10 @@ double* getInputFromFile(char* filePath, int* inputSize, int maxLineLength) {
     return input;
 }
 
-void predict(double* input, int inputSize, Layer* hiddenLayers, int layerCount) {
+void predict(double* input, int inputSize, Layer* hiddenLayers, int layerCount, char* func, char* finalFunc) {
     double* inputLayer = input;
     double* output;
+    double outputSize;
 
     for (int i = 0; i < layerCount; i++) {
         if (inputSize != hiddenLayers[i].weightCount) {
@@ -179,7 +250,12 @@ void predict(double* input, int inputSize, Layer* hiddenLayers, int layerCount) 
             exit(EXIT_FAILURE);
         }
 
-        output = multiplyLayers(inputLayer, inputSize, hiddenLayers[i]);
+        if (i != layerCount - 1 || strcmp(finalFunc, "none") == 0)
+            output = multiplyLayers(inputLayer, inputSize, hiddenLayers[i], func);
+        else
+            output = multiplyLayers(inputLayer, inputSize, hiddenLayers[i], "none");
+        
+        outputSize = hiddenLayers[i].neuronCount;
         if (i > 0) { free(inputLayer); }
 
         inputLayer = output;
@@ -187,6 +263,8 @@ void predict(double* input, int inputSize, Layer* hiddenLayers, int layerCount) 
 
         freeLayer(hiddenLayers[i]);
     }
+
+    finalActivate(output, outputSize, finalFunc);
 
     printf("\nFinal output: { ");
     for (int i = 0; i < inputSize; i++) { printf("%.6f ", output[i]); }
@@ -197,13 +275,22 @@ void predict(double* input, int inputSize, Layer* hiddenLayers, int layerCount) 
 
 void printHelp() {
     printf("Welcome to Perceptron in C's Help Page!\n");
-    printf("This is a program designed to let you build and use a neural network with ease.\n\nThe possible arguments that can be used are as follows:\n\n");
+    printf("This is a program designed to let you build and use a neural network with ease.\n\nThe possible arguments that can be used are as follows:\n");
 
-    printf("--train [network_file].csv [training_set].csv               This will train your neural network with the specified training data set.\n");
-    printf("--predict [network_file].csv [input_layer].csv              This will use your neural network to make a prediction based on the input layer.\n");
-    printf("--init-network [network_structure].csv                      This will create a new CSV file with the contents of a randomly initialized neural network based on the structure provided in the specified file.\n");
-    printf("                                                            The CSV file that has the structure of your desired network should follow the following format:\n");
-    printf("                                                            [number_of_neurons],[number_of_weights_per_neuron] <-- Repeat this on every line for every layer.\n");
+    printf("\n--init-network [network_structure].csv\n");
+    printf("This will create a new CSV file with the contents of a randomly initialized neural network based on the structure provided in the specified file.\n");
+    printf("The CSV file that has the structure of your desired network should follow the following format:\n");
+    printf("[number_of_neurons],[number_of_weights_per_neuron] <-- Repeat this on every line for every layer.\n");
+    
+    printf("\n--predict [network_file].csv [input_layer].csv [activation_function] [final_activation_function]\n");
+    printf("This will use your neural network to make a prediction based on the input layer.\n");
+    printf("The [activation_function] will be applied element-wise for all hidden layers, and for the final output later if [final_activation_function] is set to 'none'.\n");
+    printf("The [final_activation_funtion] will only be applied on the final output of the prediction, replacing the [activation_function].\n");
+    printf("The options for [activation_function] are 'none', 'relu', 'leaky relu', 'sigmoid', 'tanh', and 'elu'.\n");
+    printf("The options for [final_activation_function] are 'none', 'softmax', 'logsoftmax', 'sparsemax' , and 'raw'.\n");
+    
+    printf("\n--train [network_file].csv [training_set].csv\n");
+    printf("This will train your neural network with the specified training data set.\n");
 }
 
 #endif
